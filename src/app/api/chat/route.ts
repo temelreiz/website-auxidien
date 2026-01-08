@@ -30,29 +30,41 @@ WHAT YOU CAN EXPLAIN:
 - Smart contracts on BSC
 - Tokenomics: 100M total supply
 
-STANDARD RESPONSE TO PRICE QUESTIONS:
-"I can't provide price predictions or investment advice. AUXI's market price is determined freely by supply and demand - it's independent of the index value. I'd be happy to explain how the methodology works instead."
-
-Keep responses concise and helpful. Always prioritize user education and risk awareness.`;
+Keep responses concise and helpful.`;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('Received body:', JSON.stringify(body));
     
     // Frontend sends { messages: [...] }
-    const { messages } = body;
+    const messages = body.messages || body.message;
     
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'Messages required' }, { status: 400 });
+    // Handle both array and single message
+    let messageArray: { role: string; content: string }[] = [];
+    
+    if (Array.isArray(messages)) {
+      messageArray = messages;
+    } else if (typeof messages === 'string') {
+      messageArray = [{ role: 'user', content: messages }];
+    } else if (messages && messages.content) {
+      messageArray = [messages];
     }
 
-    // Generate sessionId from request or create new
-    const sessionId = request.headers.get('x-session-id') || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log('Processed messages:', JSON.stringify(messageArray));
+
+    if (messageArray.length === 0) {
+      console.log('No messages found in request');
+      return NextResponse.json({ error: 'Messages required', received: body }, { status: 400 });
+    }
+
+    // Generate sessionId
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Get last user message
-    const lastUserMessage = messages[messages.length - 1];
+    const lastUserMessage = messageArray[messageArray.length - 1];
 
-    // Try to save to Redis (don't fail if Redis not configured)
+    // Try to save to Redis
     try {
       let session = await getSession(sessionId);
       if (!session) {
@@ -60,7 +72,6 @@ export async function POST(request: NextRequest) {
         session = await createSession(sessionId, userAgent);
       }
 
-      // Save user message
       const userMsg = {
         id: `msg_${Date.now()}_user`,
         role: 'user' as const,
@@ -68,9 +79,9 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       };
       await addMessage(sessionId, userMsg);
+      console.log('Saved to Redis:', sessionId);
     } catch (redisError) {
-      console.warn('Redis save failed:', redisError);
-      // Continue without Redis
+      console.error('Redis save failed:', redisError);
     }
 
     // Call Claude API
@@ -78,14 +89,17 @@ export async function POST(request: NextRequest) {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
-      messages: messages.slice(-10), // Last 10 messages for context
+      messages: messageArray.slice(-10).map(m => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      })),
     });
 
     const assistantContent = response.content[0].type === 'text' 
       ? response.content[0].text 
       : 'I apologize, but I could not generate a response.';
 
-    // Try to save assistant response to Redis
+    // Save assistant response to Redis
     try {
       const assistantMsg = {
         id: `msg_${Date.now()}_assistant`,
@@ -95,7 +109,7 @@ export async function POST(request: NextRequest) {
       };
       await addMessage(sessionId, assistantMsg);
     } catch (redisError) {
-      console.warn('Redis save failed:', redisError);
+      console.error('Redis save failed:', redisError);
     }
 
     return NextResponse.json({ 
@@ -106,7 +120,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(
-      { error: 'Failed to process message' }, 
+      { error: 'Failed to process message', details: String(error) }, 
       { status: 500 }
     );
   }

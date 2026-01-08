@@ -37,34 +37,41 @@ Keep responses concise and helpful. Always prioritize user education and risk aw
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, sessionId } = await request.json();
-
-    if (!message || !sessionId) {
-      return NextResponse.json({ error: 'Message and sessionId required' }, { status: 400 });
+    const body = await request.json();
+    
+    // Frontend sends { messages: [...] }
+    const { messages } = body;
+    
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json({ error: 'Messages required' }, { status: 400 });
     }
 
-    // Ensure session exists
-    let session = await getSession(sessionId);
-    if (!session) {
-      const userAgent = request.headers.get('user-agent') || undefined;
-      session = await createSession(sessionId, userAgent);
+    // Generate sessionId from request or create new
+    const sessionId = request.headers.get('x-session-id') || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Get last user message
+    const lastUserMessage = messages[messages.length - 1];
+
+    // Try to save to Redis (don't fail if Redis not configured)
+    try {
+      let session = await getSession(sessionId);
+      if (!session) {
+        const userAgent = request.headers.get('user-agent') || undefined;
+        session = await createSession(sessionId, userAgent);
+      }
+
+      // Save user message
+      const userMsg = {
+        id: `msg_${Date.now()}_user`,
+        role: 'user' as const,
+        content: lastUserMessage.content,
+        timestamp: new Date().toISOString(),
+      };
+      await addMessage(sessionId, userMsg);
+    } catch (redisError) {
+      console.warn('Redis save failed:', redisError);
+      // Continue without Redis
     }
-
-    // Save user message
-    const userMessage = {
-      id: `msg_${Date.now()}_user`,
-      role: 'user' as const,
-      content: message,
-      timestamp: new Date().toISOString(),
-    };
-    await addMessage(sessionId, userMessage);
-
-    // Get conversation history for context
-    const messages = session.messages.map(m => ({
-      role: m.role as 'user' | 'assistant',
-      content: m.content,
-    }));
-    messages.push({ role: 'user', content: message });
 
     // Call Claude API
     const response = await anthropic.messages.create({
@@ -78,17 +85,21 @@ export async function POST(request: NextRequest) {
       ? response.content[0].text 
       : 'I apologize, but I could not generate a response.';
 
-    // Save assistant message
-    const assistantMessage = {
-      id: `msg_${Date.now()}_assistant`,
-      role: 'assistant' as const,
-      content: assistantContent,
-      timestamp: new Date().toISOString(),
-    };
-    await addMessage(sessionId, assistantMessage);
+    // Try to save assistant response to Redis
+    try {
+      const assistantMsg = {
+        id: `msg_${Date.now()}_assistant`,
+        role: 'assistant' as const,
+        content: assistantContent,
+        timestamp: new Date().toISOString(),
+      };
+      await addMessage(sessionId, assistantMsg);
+    } catch (redisError) {
+      console.warn('Redis save failed:', redisError);
+    }
 
     return NextResponse.json({ 
-      message: assistantContent,
+      content: assistantContent,
       sessionId,
     });
 

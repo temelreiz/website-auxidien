@@ -36,7 +36,7 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
-          <a href="https://thena.fi/swap?inputCurrency=0x55d398326f99059ff775485246999027b3197955&outputCurrency=0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36&swapType=1" target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2">
+          <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36" target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2">
             Buy AUXI
           </a>
         </div>

@@ -1,8 +1,16 @@
 'use client';
 
-import { ArrowRight, TrendingUp, Shield, Zap, Info } from 'lucide-react';
+import { ArrowRight, TrendingUp, Shield, Zap, Info, RefreshCw } from 'lucide-react';
+import { useAuxiPrice } from '@/hooks/useAuxiPrice';
 
 export function Hero() {
+  const { price, lastUpdate, loading, refetch } = useAuxiPrice();
+
+  // Normalize edilmiş index değeri (Base = 100, gösterim için /100)
+  // Oracle'dan gelen fiyat $/gram, bunu normalize et
+  const BASE_PRICE = 100; // Base reference
+  const normalizedValue = price ? (price / BASE_PRICE).toFixed(2) : '---';
+
   return (
     <section className="hero-bg min-h-screen flex items-center pt-20">
       <div className="section-container">
@@ -15,27 +23,47 @@ export function Hero() {
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-white">The Future of</span>
+              <span className="text-white">Volatility-Weighted</span>
               <br />
-              <span className="text-gold-gradient">Precious Metals</span>
+              <span className="text-gold-gradient">DeFi Index</span>
             </h1>
 
-            <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-              AUXI is a volatility-weighted adaptive index token using Gold, Silver, 
-              Platinum, and Palladium as stability signals. Rule-based and transparent.
+            <p className="text-xl text-gray-400 mb-4 leading-relaxed">
+              A volatility-weighted DeFi index, not a promise. Transparent methodology. 
+              Public liquidity. Market-driven discovery.
+            </p>
+            
+            <p className="text-lg text-gray-500 mb-8">
+              AUXI reflects signals, not certainty.
             </p>
 
-            {/* Normalized Index Value - NO USD */}
+            {/* Normalized Index Value - Dynamic from Oracle */}
             <div className="glass-gold rounded-2xl p-6 mb-8 inline-block">
-              <p className="text-sm text-gray-400 mb-1">Auxidien Index Value</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-gray-400">Auxidien Index Value</p>
+                <button 
+                  onClick={refetch}
+                  className="text-gray-500 hover:text-auxi-gold transition-colors"
+                  title="Refresh"
+                >
+                  <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                </button>
+              </div>
               <div className="flex items-end gap-3">
-                <span className="text-5xl font-bold text-gold-gradient">0.88</span>
+                <span className={`text-5xl font-bold text-gold-gradient ${loading ? 'opacity-50' : ''}`}>
+                  {normalizedValue}
+                </span>
                 <span className="text-sm text-gray-500 bg-white/10 px-2 py-1 rounded">Base = 1.00</span>
               </div>
               <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
                 <Info size={14} />
                 <span>Reference signal. Not a market price.</span>
               </div>
+              {lastUpdate && (
+                <p className="text-xs text-gray-600 mt-2">
+                  Last updated: {lastUpdate.toLocaleTimeString()}
+                </p>
+              )}
             </div>
 
             {/* CTA Buttons */}

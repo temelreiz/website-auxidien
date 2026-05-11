@@ -1,6 +1,7 @@
 'use client';
 
 import { Github, Twitter, MessageCircle, FileText, Mail } from 'lucide-react';
+import { CHAIN_LABEL, CONTRACTS, EXPLORER_BASE_URL } from '@/config/contracts';
 
 const socialLinks = [
   { icon: Twitter, href: 'https://x.com/auxidien', label: 'X (Twitter)' },
@@ -20,7 +21,7 @@ const footerLinks = [
   {
     title: 'Resources',
     links: [
-      { label: 'BscScan', href: 'https://bscscan.com/token/0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36' },
+      { label: 'BscScan', href: `${EXPLORER_BASE_URL}/token/${CONTRACTS.AUXI_TOKEN}` },
       { label: 'For Exchanges', href: '/compliance-memo.pdf' },
     ],
   },
@@ -97,7 +98,7 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span>Built on</span>
-            <span className="text-yellow-500 font-semibold">BNB Smart Chain</span>
+            <span className="text-yellow-500 font-semibold">{CHAIN_LABEL}</span>
           </div>
         </div>
       </div>

@@ -2,13 +2,15 @@
 
 import { ArrowRight, TrendingUp, Shield, Zap, Info, RefreshCw } from 'lucide-react';
 import { useAuxiPrice } from '@/hooks/useAuxiPrice';
+import { CHAIN_LABEL, CONTRACTS, EXPLORER_BASE_URL } from '@/config/contracts';
+
+const BASE_PRICE = Number(process.env.NEXT_PUBLIC_INDEX_BASE_USD_PER_OZ || '3000');
 
 export function Hero() {
   const { price, lastUpdate, loading, refetch } = useAuxiPrice();
 
-  // Normalize edilmiş index değeri (Base = 100, gösterim için /100)
-  // Oracle'dan gelen fiyat $/gram, bunu normalize et
-  const BASE_PRICE = 100; // Base reference
+  // Oracle returns USD/oz × 1e6. Normalize against a configurable base so the
+  // headline number stays human-readable as composite price drifts.
   const normalizedValue = price ? (price / BASE_PRICE).toFixed(2) : '---';
 
   return (
@@ -19,7 +21,7 @@ export function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-gold mb-6">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-sm text-auxi-gold">Live on BSC Mainnet</span>
+              <span className="text-sm text-auxi-gold">Live on {CHAIN_LABEL}</span>
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -72,8 +74,8 @@ export function Hero() {
                 Learn More
                 <ArrowRight size={20} />
               </a>
-              <a 
-                href="https://bscscan.com/token/0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36"
+              <a
+                href={`${EXPLORER_BASE_URL}/token/${CONTRACTS.AUXI_TOKEN}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary"
@@ -131,8 +133,8 @@ export function Hero() {
           {[
             { icon: Shield, label: 'Signal Sources', value: '4 Metals' },
             { icon: TrendingUp, label: 'Total Supply', value: '100M AUXI' },
-            { icon: Zap, label: 'Update Frequency', value: '5 Minutes' },
-            { icon: Shield, label: 'Network', value: 'BSC Mainnet' },
+            { icon: Zap, label: 'Update Frequency', value: '1 Hour' },
+            { icon: Shield, label: 'Network', value: CHAIN_LABEL },
           ].map((stat, i) => (
             <div key={i} className="glass rounded-2xl p-6 text-center card-hover">
               <stat.icon className="w-8 h-8 text-auxi-gold mx-auto mb-3" />

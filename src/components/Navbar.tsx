@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { CONTRACTS, IS_TESTNET, EXPLORER_BASE_URL } from '@/config/contracts';
+
+// PancakeSwap V2 swap URL — only meaningful on BSC mainnet. On testnet we point
+// to the token's explorer page instead, which lets visitors verify the address.
+const BUY_HREF = IS_TESTNET
+  ? `${EXPLORER_BASE_URL}/token/${CONTRACTS.AUXI_TOKEN}`
+  : `https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=${CONTRACTS.AUXI_TOKEN}`;
+const BUY_LABEL = IS_TESTNET ? 'View Token' : 'Buy AUXI';
 
 const navLinks = [
   { href: '#about', label: 'About' },
@@ -36,8 +44,8 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
-          <a href="https://pancakeswap.finance/swap?inputCurrency=0x55d398326f99059fF775485246999027B3197955&outputCurrency=0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36" target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2">
-            Buy AUXI
+          <a href={BUY_HREF} target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2">
+            {BUY_LABEL}
           </a>
         </div>
 
@@ -54,8 +62,8 @@ export function Navbar() {
                 {link.label}
               </a>
             ))}
-            <a href="https://pancakeswap.finance" target="_blank" rel="noopener noreferrer" className="btn-primary text-center mt-4">
-              Buy AUXI
+            <a href={BUY_HREF} target="_blank" rel="noopener noreferrer" className="btn-primary text-center mt-4">
+              {BUY_LABEL}
             </a>
           </div>
         </div>

@@ -2,23 +2,24 @@
 
 import { Copy, ExternalLink, Check } from 'lucide-react';
 import { useState } from 'react';
+import { CHAIN_LABEL, CONTRACTS, EXPLORER_BASE_URL } from '@/config/contracts';
 
 const contracts = [
   {
     name: 'AUXI Token',
-    address: '0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36',
+    address: CONTRACTS.AUXI_TOKEN,
     description: 'Main ERC-20 token contract',
     icon: '🪙',
   },
   {
     name: 'Index Oracle',
-    address: '0xFc124A410A4AD4c448911735BF0BCc44E8C74Fbd',
-    description: 'Publishes normalized index values on-chain',
+    address: CONTRACTS.ORACLE,
+    description: 'Publishes the on-chain composite index value',
     icon: '📊',
   },
   {
     name: 'Vesting Contract',
-    address: '0x48D15B999c0cD5f160D739974188193c59c13474',
+    address: CONTRACTS.VESTING,
     description: 'Team token vesting schedule',
     icon: '🔒',
   },
@@ -42,7 +43,7 @@ export function Contracts() {
             <span className="text-gold-gradient">Smart Contracts</span>
           </h2>
           <p className="text-xl text-gray-400">
-            All contracts are deployed on BSC Mainnet and verified on BscScan.
+            All contracts are deployed on {CHAIN_LABEL} and verified on the explorer.
           </p>
         </div>
 
@@ -53,7 +54,7 @@ export function Contracts() {
               <div className="text-4xl mb-4">{contract.icon}</div>
               <h3 className="text-xl font-semibold text-white mb-2">{contract.name}</h3>
               <p className="text-sm text-gray-400 mb-4">{contract.description}</p>
-              
+
               {/* Address */}
               <div className="bg-black/30 rounded-xl p-4">
                 <p className="text-xs text-gray-500 mb-1">Contract Address</p>
@@ -74,11 +75,11 @@ export function Contracts() {
                       )}
                     </button>
                     <a
-                      href={`https://bscscan.com/address/${contract.address}`}
+                      href={`${EXPLORER_BASE_URL}/address/${contract.address}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                      title="View on BscScan"
+                      title="View on explorer"
                     >
                       <ExternalLink className="w-4 h-4 text-gray-400" />
                     </a>
@@ -97,7 +98,7 @@ export function Contracts() {
               <div>
                 <p className="text-sm text-gray-400">Token Address</p>
                 <p className="text-auxi-gold font-mono text-sm mt-1">
-                  0x03e5...bd36
+                  {CONTRACTS.AUXI_TOKEN.slice(0, 6)}...{CONTRACTS.AUXI_TOKEN.slice(-4)}
                 </p>
               </div>
               <div>
@@ -110,7 +111,7 @@ export function Contracts() {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Network</p>
-                <p className="text-white font-semibold mt-1">BSC (56)</p>
+                <p className="text-white font-semibold mt-1">{CHAIN_LABEL}</p>
               </div>
             </div>
           </div>
@@ -119,7 +120,7 @@ export function Contracts() {
         {/* Security Note */}
         <div className="mt-12 text-center">
           <p className="text-sm text-gray-500">
-            ⚠️ Always verify contract addresses before interacting. 
+            ⚠️ Always verify contract addresses before interacting.
             Only use the official addresses listed above.
           </p>
         </div>

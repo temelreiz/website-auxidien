@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPublicClient, http, parseAbi } from 'viem';
-import { bsc } from 'viem/chains';
-
-const ORACLE_ADDRESS = '0xFc124A410A4AD4c448911735BF0BCc44E8C74Fbd';
+import { CHAIN, CONTRACTS, RPC_URL } from '@/config/contracts';
 
 const oracleAbi = parseAbi([
   'function getPricePerOzE6() view returns (uint256)',
@@ -12,8 +10,8 @@ const oracleAbi = parseAbi([
 ]);
 
 const client = createPublicClient({
-  chain: bsc,
-  transport: http('https://bsc-dataseed1.binance.org/'),
+  chain: CHAIN,
+  transport: http(RPC_URL),
 });
 
 export function useAuxiPrice() {
@@ -26,18 +24,17 @@ export function useAuxiPrice() {
     setLoading(true);
     try {
       const priceE6 = await client.readContract({
-        address: ORACLE_ADDRESS,
+        address: CONTRACTS.ORACLE,
         abi: oracleAbi,
         functionName: 'getPricePerOzE6',
       });
 
-      // Oracle stores AUXI index price per gram (despite function name)
-      const pricePerGram = Number(priceE6) / 1e6;
-      setPrice(pricePerGram);
-      
+      // Oracle stores USD/oz × 1e6 (six decimals)
+      setPrice(Number(priceE6) / 1e6);
+
       try {
         const updateTime = await client.readContract({
-          address: ORACLE_ADDRESS,
+          address: CONTRACTS.ORACLE,
           abi: oracleAbi,
           functionName: 'lastUpdateAt',
         });
@@ -45,15 +42,11 @@ export function useAuxiPrice() {
       } catch {
         setLastUpdate(new Date());
       }
-      
+
       setError(null);
     } catch (err) {
       console.error('Failed to fetch price:', err);
       setError('Price unavailable');
-      // Fallback to last known price if available
-      if (!price) {
-        setPrice(88.30); // Fallback değer
-      }
     } finally {
       setLoading(false);
     }
@@ -61,10 +54,10 @@ export function useAuxiPrice() {
 
   useEffect(() => {
     fetchPrice();
-    
-    // Her 30 saniyede güncelle
+
+    // Refresh every 30 seconds
     const interval = setInterval(fetchPrice, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 

@@ -1,52 +1,51 @@
 // app/api/price/route.ts
 import { NextResponse } from 'next/server';
 import { createPublicClient, http, parseAbi } from 'viem';
-import { bsc } from 'viem/chains';
+import { CHAIN, CONTRACTS, RPC_URL } from '@/config/contracts';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const ORACLE_ADDRESS = '0xFc124A410A4AD4c448911735BF0BCc44E8C74Fbd';
-
 const oracleAbi = parseAbi([
   'function getPricePerOzE6() view returns (uint256)',
   'function lastUpdateAt() view returns (uint256)',
+  'function getMetalPrices() view returns (uint256 gold, uint256 silver, uint256 platinum, uint256 palladium)',
 ]);
 
 const client = createPublicClient({
-  chain: bsc,
-  transport: http('https://bsc-dataseed1.binance.org/'),
+  chain: CHAIN,
+  transport: http(RPC_URL),
 });
 
 export async function GET() {
   try {
-    const priceE6 = await client.readContract({
-      address: ORACLE_ADDRESS,
-      abi: oracleAbi,
-      functionName: 'getPricePerOzE6',
-    });
+    const [priceE6, lastUpdateAt, metals] = await Promise.all([
+      client.readContract({ address: CONTRACTS.ORACLE, abi: oracleAbi, functionName: 'getPricePerOzE6' }),
+      client.readContract({ address: CONTRACTS.ORACLE, abi: oracleAbi, functionName: 'lastUpdateAt' }).catch(() => null),
+      client.readContract({ address: CONTRACTS.ORACLE, abi: oracleAbi, functionName: 'getMetalPrices' }).catch(() => null),
+    ]);
 
-    const pricePerGram = Number(priceE6) / 1e6;
-
-    let lastUpdate = null;
-    try {
-      const updateTime = await client.readContract({
-        address: ORACLE_ADDRESS,
-        abi: oracleAbi,
-        functionName: 'lastUpdateAt',
-      });
-      lastUpdate = Number(updateTime) * 1000;
-    } catch {}
+    const pricePerOz = Number(priceE6) / 1e6;
+    const lastUpdate = lastUpdateAt ? Number(lastUpdateAt) * 1000 : null;
 
     return NextResponse.json({
-      price: pricePerGram,
+      price: pricePerOz,
+      pricePerOz,
       lastUpdate,
+      metals: metals
+        ? {
+            gold: Number(metals[0]) / 1e6,
+            silver: Number(metals[1]) / 1e6,
+            platinum: Number(metals[2]) / 1e6,
+            palladium: Number(metals[3]) / 1e6,
+          }
+        : null,
     });
   } catch (error) {
     console.error('Oracle read error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch price', price: 87.45, lastUpdate: null },
-      { status: 200 } // Return fallback price
+      { error: 'Failed to fetch price', price: null, lastUpdate: null },
+      { status: 200 },
     );
   }
 }

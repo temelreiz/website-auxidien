@@ -16,7 +16,7 @@ const features = [
   {
     icon: LineChart,
     title: 'Real-Time Index Updates',
-    description: 'Oracle publishes index values every 5 minutes. Market price is determined freely by trading activity.',
+    description: 'Oracle publishes the composite index price hourly. Market price is determined freely by trading activity.',
   },
   {
     icon: Lock,
@@ -73,10 +73,10 @@ export function About() {
           <div className="glass rounded-2xl p-8">
             <div className="grid md:grid-cols-4 gap-6">
               {[
-                { name: 'Gold', symbol: 'XAU', weight: '44.49%', icon: '/gold-icon.png' },
-                { name: 'Silver', symbol: 'XAG', weight: '21.93%', icon: '/silver-icon.png' },
-                { name: 'Platinum', symbol: 'XPT', weight: '18.58%', icon: '/platinum-icon.png' },
-                { name: 'Palladium', symbol: 'XPD', weight: '15.00%', icon: '/palladium-icon.png' },
+                { name: 'Gold', symbol: 'XAU', weight: '55.00%', icon: '/gold-icon.png' },
+                { name: 'Silver', symbol: 'XAG', weight: '20.00%', icon: '/silver-icon.png' },
+                { name: 'Platinum', symbol: 'XPT', weight: '17.00%', icon: '/platinum-icon.png' },
+                { name: 'Palladium', symbol: 'XPD', weight: '8.00%', icon: '/palladium-icon.png' },
               ].map((metal, index) => (
                 <div key={index} className="text-center">
                   <div className="w-20 h-20 mx-auto flex items-center justify-center mb-4">
@@ -92,10 +92,10 @@ export function About() {
             {/* Weight Bar */}
             <div className="mt-10">
               <div className="h-4 rounded-full overflow-hidden flex">
-                <div className="metal-gold h-full" style={{ width: '44.49%' }}></div>
-                <div className="metal-silver h-full" style={{ width: '21.93%' }}></div>
-                <div className="metal-platinum h-full" style={{ width: '18.58%' }}></div>
-                <div className="metal-palladium h-full" style={{ width: '15.00%' }}></div>
+                <div className="metal-gold h-full" style={{ width: '55%' }}></div>
+                <div className="metal-silver h-full" style={{ width: '20%' }}></div>
+                <div className="metal-platinum h-full" style={{ width: '17%' }}></div>
+                <div className="metal-palladium h-full" style={{ width: '8%' }}></div>
               </div>
               <p className="text-center text-sm text-gray-500 mt-3">
                 Weights are dynamically adjusted based on volatility signals

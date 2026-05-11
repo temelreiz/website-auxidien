@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, TrendingUp, Shield, Zap } from 'lucide-react';
+import { CHAIN_LABEL, CONTRACTS, EXPLORER_BASE_URL } from '@/config/contracts';
 
 export function Hero() {
   return (
@@ -11,7 +12,7 @@ export function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-gold mb-6">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-sm text-auxi-gold">Live on BSC Mainnet</span>
+              <span className="text-sm text-auxi-gold">Live on {CHAIN_LABEL}</span>
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -29,8 +30,8 @@ export function Hero() {
             <div className="glass-gold rounded-2xl p-6 mb-8 inline-block">
               <p className="text-sm text-gray-400 mb-1">AUXI Index Price</p>
               <div className="flex items-end gap-3">
-                <span className="text-4xl font-bold text-gold-gradient">$88.30</span>
-                <span className="text-gray-500">/gram</span>
+                <span className="text-4xl font-bold text-gold-gradient">$3,050.55</span>
+                <span className="text-gray-500">/oz</span>
                 <span className="flex items-center gap-1 text-green-500 text-sm">
                   <TrendingUp size={16} />
                   +2.4%
@@ -44,8 +45,8 @@ export function Hero() {
                 Learn More
                 <ArrowRight size={20} />
               </a>
-              <a 
-                href="https://bscscan.com/token/0x03e5FD0dfc9755f070BA420Ae364c452C1aFbd36"
+              <a
+                href={`${EXPLORER_BASE_URL}/token/${CONTRACTS.AUXI_TOKEN}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary"
@@ -103,8 +104,8 @@ export function Hero() {
           {[
             { icon: Shield, label: 'Backed Assets', value: '4 Metals' },
             { icon: TrendingUp, label: 'Total Supply', value: '100M AUXI' },
-            { icon: Zap, label: 'Update Frequency', value: '5 Minutes' },
-            { icon: Shield, label: 'Network', value: 'BSC Mainnet' },
+            { icon: Zap, label: 'Update Frequency', value: '1 Hour' },
+            { icon: Shield, label: 'Network', value: CHAIN_LABEL },
           ].map((stat, i) => (
             <div key={i} className="glass rounded-2xl p-6 text-center card-hover">
               <stat.icon className="w-8 h-8 text-auxi-gold mx-auto mb-3" />
